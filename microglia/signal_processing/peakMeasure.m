@@ -138,15 +138,12 @@ if valley_additions > 0 && isnumeric(valley_additions)
                     % update valley info
                     if ~isempty(x) || ~isempty(y)
                         vly_locs = [vly_locs; x];
-%                         vly_locs = sort(vly_locs,'ascend');
-%                         [~,idx] = find(vly_locs == x);
                         valleys = [valleys;y];
                         true_valleys = [true_valleys,y];
                         addedValleys(i) = x;
                         figure(h)
                         hold on
                         plot(axh, x,y, 'g*')
-%                         refreshdata(h,'base');
                     end
                 case 'No'
                     % Repeat removal selection
@@ -193,17 +190,11 @@ for i = 1:length(pks) % iterate thru peaks
         if (exist('leftLoc', 'var') == 1 && exist('rightLoc', 'var')) == 1
             % % % Integrate between right and left valley locs % % %
             peakRAW = raw_signal(leftLoc:rightLoc);
-            posRAW = sum(peakRAW(peakRAW >=0));
-            negRAW = sum(peakRAW(peakRAW < 0));
-            raw_tempAUC = posRAW + abs(negRAW);
+            raw_auc(i) = measureAUC(peakRAW);
             
             peakFILT = filtered_signal(leftLoc:rightLoc);
-            posFILT = sum(peakFILT(peakFILT >=0));
-            negFILT = sum(peakFILT(peakFILT < 0));
-            filtered_tempAUC = posFILT + abs(negFILT);
+            filtered_auc(i) = measureAUC(peakFILT);
             
-            raw_auc(i) = raw_tempAUC(end);
-            filtered_auc(i) = filtered_tempAUC(end);
             peakDurations(i) = rightLoc - leftLoc;
         else
             continue
