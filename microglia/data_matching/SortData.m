@@ -9,7 +9,7 @@ for k = 1:numel(fn)
     elseif strcmp(ProcessedEvents.(fn{k}).Pathology, 'TMEV')
         if ProcessedEvents.(fn{k}).DPI == 2
             sortedProcessedData.TMEV.DPI_2.(fn{k}) = ProcessedEvents.(fn{k});
-        elseif 2 < ProcessedEvents.(fn{k}).DPI < 7
+        elseif 2 < ProcessedEvents.(fn{k}).DPI && ProcessedEvents.(fn{k}).DPI < 7
             sortedProcessedData.TMEV.DPI_5.(fn{k}) = ProcessedEvents.(fn{k});
         elseif ProcessedEvents.(fn{k}).DPI >= 14
             sortedProcessedData.TMEV.DPI_14.(fn{k}) = ProcessedEvents.(fn{k});
@@ -19,4 +19,5 @@ for k = 1:numel(fn)
     else
         disp('Unidentifiable pathology.');
     end
+end
 end

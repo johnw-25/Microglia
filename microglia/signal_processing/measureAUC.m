@@ -3,6 +3,6 @@ function AUC = measureAUC(cutSignal)
 posAUC = sum(cutSignal(cutSignal >=0));
 negAUC = sum(cutSignal(cutSignal < 0));
 
-AUC = posAUC + negAUC;
+AUC = posAUC + abs(negAUC);
 
 end

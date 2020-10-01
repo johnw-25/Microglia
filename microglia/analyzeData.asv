@@ -30,7 +30,6 @@ after_0_peaks = [];
 before_0_durs = [];
 after_0_durs = [];
 frames = 1740;
-allPBSTraces = {};
 for k = 1:numel(PBSfields)
     % extract
     tempIEI = PBS.(PBSfields{k}).IEI;
@@ -39,7 +38,6 @@ for k = 1:numel(PBSfields)
     temp_timehitR = PBS.(PBSfields{k}).timehitR;
     tempLocs = PBS.(PBSfields{k}).PeakLocs;
     tempLocs = tempLocs(~isnan(tempLocs));
-    tempLocs = tempLocs(tempLocs > 70); % exclude burn
 %     if ~isempty(tempLocs)
 %     cutout = length(tempLocs);
 %     tempLocs(cutout) = [];
@@ -56,11 +54,6 @@ for k = 1:numel(PBSfields)
     tempAUC = abs(tempAUC(~isnan(tempAUC)));
     tempPeaks = PBS.(PBSfields{k}).PeakMags;
     tempPeaks = tempPeaks(~isnan(tempPeaks));
-    
-    % update all trace names
-    for i = 1:length(tempRAWAUC)
-        allPBSTraces = [allPBSTraces; PBSfields(k)];
-    end
     
     allPBSPeaks = [allPBSPeaks; tempPeaks];
     all_RAWauc = [all_RAWauc; tempRAWAUC];
@@ -118,11 +111,6 @@ yticklabels(PBSfields);
 binEdges = [-1600:100:1600];
 numBins = numel(binEdges);
 
-% % Peak Magnitude vs Peak Duration % %
-figure()
-plot(allPeakDurs, allPBSPeaks,'bd','MarkerFaceColor','r');
-xlabel('Peak durations (s)'); ylabel('Peak magnitudes (dF/F)'); title('PBS: Peak vs duration');
-
 % % Peak Location Histogram % %
 figure()
 histogram(allPBSLocs,numBins, 'BinEdges', binEdges)
@@ -160,10 +148,10 @@ title('PBS: filtered signal auc'); xlabel('relative time(s)');
 
 % % raw event auc scatter % %
 fig = figure('DeleteFcn','doc datacursormode');
-hold on
+for k = 1:
 plot(allPBSLocs, all_RAWauc, 'dr' ,'MarkerFaceColor','b')
 dcm_obj = datacursormode(fig);
-set(dcm_obj,'UpdateFcn',{@myupdatefcn,allPBSTraces})
+set(dcm_obj,'UpdateFcn',{@myupdatefcn,PBSfields})
 title('PBS: raw signal auc'); xlabel('relative time(s)');
 
 % % Plotting Inter-event Intervals % %
@@ -819,7 +807,7 @@ xlabel('Before time 0 / After time 0'); ylabel('RMS'); title('Soma PBS RMS');
 for k = 1:length(A_RMS)
     hold on
     if A_RMS(k) < B_RMS(k)
-        plot([1,2], [log10(A_RMS(k)), log10(B_RMS(k))], 'r-d');
+        plot([1,2], [A_RMS(k), B_RMS(k)], 'r-d');
     else
         plot([1,2], [A_RMS(k), B_RMS(k)], 'b-d');
         
@@ -842,7 +830,7 @@ xlim([0 3])
 figure()
 for k = 1:length(A_RMS)
 hold on
-plot([1,log10(A_RMS(k))], [2, log10(B_RMS(k))], 'dk');
+plot([1,A_RMS(k)], [2, B_RMS(k)], 'dk');
 % hold on
 % plot(groupB, B_RMS, 'dk');
 % legend('Length A', 'Length B');
