@@ -1,4 +1,4 @@
-function [LPF, response] = noiseRemover(filterOrder, Fc, Fs)
+function LPF = noiseRemover(filterOrder, Fc, Fs)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% Simple function to create a FIR low-pass filter to remove high%%%%%%%
 %%%%% frequency noise in microglia calcium fluorescence data.       %%%%%%%
@@ -6,5 +6,5 @@ function [LPF, response] = noiseRemover(filterOrder, Fc, Fs)
 
 LPF = designfilt('lowpassfir', 'FilterOrder', filterOrder, 'CutoffFrequency', Fc, 'SampleRate', Fs);
 
-response = fvtool(LPF);
+%response = fvtool(LPF);
 end

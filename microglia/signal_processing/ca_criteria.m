@@ -10,7 +10,7 @@ peak_data = cell(size(data_names,1),1);
 peak_data(:,1) = data_names(:,1);
 SDs = 2.5;
 Fs = 1.04;
-lag = 30; %window
+lag = 50; %window
 threshold = 5.0; % threshold in standard deviations
 influence = 0.99;
 for j = 1:length(MyData)
@@ -35,7 +35,7 @@ for j = 1:length(MyData)
         % eventless videos
         p1_check = any(p);
         height_check = any(data(locs) > 0.40);
-        if  p1_check == 1 && height_check == 1 %&& any(raw_p) == 1
+        if  p1_check == 1 && height_check == 1 && any(raw_p)
             % % % DO NOTHING
             tempF(k,:) = tempF(k,:);
             temp_locs{k,1} = locs;
@@ -44,8 +44,8 @@ for j = 1:length(MyData)
             temp_locs{k,2} = ROI(k);
             temp_widths{k,2} = w;
         else
-%             tempF(k,:) = NaN;
-%             ROI(k) = NaN;
+            tempF(k,:) = NaN;
+            ROI(k) = NaN;
         end
     end
     peak_data{j,2} = struct('locs',{temp_locs});
@@ -53,6 +53,7 @@ for j = 1:length(MyData)
     peak_data{j,2}.peaks = temp_peaks;
     peak_data{j,2}.ROI = ROI;
     peak_data{j,2}.widths = temp_widths;
+    peak_data{j,3} = tempF;
     temp_iscell = iscell_list{1,j};
     temp_TN = sum(isnan(ROI));
     TN{j,1} = temp_TN;
@@ -140,31 +141,104 @@ UseProms = MeanProms + StdProms*2;%determine N standard deviations
 MeanW = mean(w);%mean prominence of all peaks for individual trace
 StdW = std(w);%standard deviation of prominence of all peaks for individual trace
 UseW = MeanW + StdW*2;%determine N standard deviations
-%% trying signal filtering in this section
-SDs = 2.5;
-tempF = data_names{1,3};
-data = double(tempF(11,:));
+%% roi plotting
+set(0,'defaultfigurecolor',[1 1 1])
+T2314_ROIs = [3; 66];
+T2314_useROI = 1:length(T2314_ROIs);
+T2314plot = figure();
+ROI_plot_general_purpose(T2314_ROIs+1, 'PBS')
 
-window = 11; % arbitrary window width
-kernel = ones(1,window)/window;
-
-avg_filter = filter(kernel, 1, data);
-cubic_filter = sgolayfilt(data, 5, 9);
-
-[avg_pks, locs, ~, ~] = FindPeaks_Stim_v2(avg_filter ,Fs, SDs, 'Frames');
-figure()
-plot(data)
+locs2314 = peak_data{35,2}.locs;
+T2314_F = data_names{35,3};
+time2314 = (1:940)./1.04;
+fig = figure();
 hold on
-plot(avg_filter, 'LineWidth', 1.5)
-hold on
-plot(locs, avg_pks,'d','MarkerFaceColor', 'r')
-legend('unfiltered', 'filtered');
+for k = 1:length(T2314_ROIs)
+    tempLocs = locs2314{T2314_ROIs(k)+1};
+    tempF = T2314_F(T2314_ROIs(k)+1,:);
+    plot(time2314, tempF+k*2,'LineWidth',1.0,'Color',[0.9882, 0.8, 0])
+    plot(tempLocs./1.04, (tempF(tempLocs)+k*2).*1.15,'o','Color',[0, 0, 0],'MarkerFaceColor',[0, 0, 0],'MarkerSize',1.25)
+end
+plot([0 0], [0, 1], '-k',[0, 60*1.04], [0 0], '-k','LineWidth',1)
+ylim([0 setLim]);
+set(gca,'Visible','off')
+hold off
+set(gcf, 'Units','inches','position',[4 4 2.75 3]);
+set(gcf, 'PaperPosition', [4 4 2.75 3]);
+print(fig,'T2314_traces_pbs.png', '-r900','-dpng');
 
-% figure()
-% plot(data)
-% hold on
-% plot(cubic_filter)
-% legend('unfiltered', 'cubic');
-decay_data = avg_filter(locs(1):locs(1)+30);
-figure()
-plot(decay_data)
+
+T2289_ROIs = data_names{29,4};
+T2289_ROIs = T2289_ROIs(~isnan(T2289_ROIs));
+T2289_useROI = 1:length(T2289_ROIs);
+ROI_plot_general_purpose(T2289_ROIs+1, 'TMEV 2 DPI')
+
+locs2289 = peak_data{29,2}.locs;
+T2289_F = data_names{29,3};
+time2289 = (1:940)./1.04;
+fig = figure();
+hold on
+for k = 1:length(T2289_ROIs)
+    tempLocs = locs2289{T2289_ROIs(k)+1};
+    tempF = T2289_F(T2289_ROIs(k)+1,:);
+    plot(time2289, (tempF+k*2),'LineWidth',1.0,'Color',[0.9882, 0.8, 0])
+    plot(tempLocs./1.04, (tempF(tempLocs)+k*2)*1.05,'o','Color',[0, 0, 0],'MarkerFaceColor',[0, 0, 0],'MarkerSize',1.25)
+end
+plot([0 0], [0, 1], '-k',[0, 60*1.04], [0 0], '-k','LineWidth',1)
+limits = ylim();
+setLim = limits(2);
+set(gca,'Visible','off')
+hold off
+set(gcf, 'Units','inches','position',[4 4 2.75 3]);
+set(gcf, 'PaperPosition', [4 4 2.75 3]);
+print(fig,'T2289_traces_tmev2dpi.png', '-r900','-dpng');
+
+
+T2235_ROIs = data_names{26,4};
+T2235_ROIs = T2235_ROIs(~isnan(T2235_ROIs));
+T2235_useROI = 1:length(T2235_ROIs);
+T2235plot = figure();
+ROI_plot_general_purpose(T2235_ROIs+1, 'TMEV 5 DPI')
+
+locs2235 = peak_data{26,2}.locs;
+T2235_F = data_names{26,3};
+time2235 = (1:940)./1.04;
+fig = figure();
+hold on
+for k = 1:length(T2235_ROIs)
+    tempLocs = locs2235{T2235_ROIs(k)+1};
+    tempF = T2235_F(T2235_ROIs(k)+1,:);
+    plot(time2235, tempF+k*2,'LineWidth',1.0,'Color',[0.9882, 0.8, 0])
+    plot(tempLocs./1.04, (tempF(tempLocs)+k*2)*1.15,'o','Color',[0, 0, 0],'MarkerFaceColor',[0, 0, 0],'MarkerSize',1.25)
+end
+plot([0 0], [0, 1], '-k',[0, 60*1.04], [0 0], '-k','LineWidth',1)
+ylim([0 setLim]);
+set(gca,'Visible','off')
+hold off
+set(gcf, 'Units','inches','position',[4 4 2.75 3]);
+set(gcf, 'PaperPosition', [4 4 2.75 3]);
+print(fig,'T2235_traces_tmev5dpi.png', '-r900','-dpng');
+
+
+T2130_ROIs = [1; 13];
+T2130_useROI = 1:length(T2130_ROIs);
+ROI_plot_general_purpose(T2130_ROIs+1, 'TMEV 15 DPI')
+
+locs2130 = peak_data{13,2}.locs;
+T2130_F = data_names{13,3};
+time2130 = (1:940)./1.04;
+fig = figure();
+hold on
+for k = 1:length(T2130_ROIs)
+    tempLocs = locs2130{T2130_ROIs(k)+1};
+    tempF = T2130_F(T2130_ROIs(k)+1,:);
+    plot(time2130, tempF+k*2,'LineWidth',1.0,'Color',[0.9882, 0.8, 0])
+    plot(tempLocs./1.04, (tempF(tempLocs)+k*2).*1.15,'o','Color',[0, 0, 0],'MarkerFaceColor',[0, 0, 0],'MarkerSize',1.25)
+end
+plot([0 0], [0, 1], '-k',[0, 60*1.04], [0 0], '-k','LineWidth',1)
+ylim([0 setLim]);
+set(gca,'Visible','off')
+hold off
+set(gcf, 'Units','inches','position',[4 4 2.75 3]);
+set(gcf, 'PaperPosition', [4 4 2.75 3]);
+print(fig,'T2130_traces_tmev15dpi.png', '-r900','-dpng');

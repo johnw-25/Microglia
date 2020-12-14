@@ -221,9 +221,6 @@ axisLines = gca;
 set(axisLines,'Parent',somaPbs,'YDir','normal', ...
     'XColor', [137/255 137/255 137/255],'YColor', [137/255 137/255 137/255], ...
     'FontSize',10,'FontName','Arial','Color','none');
-% yticks([1:size(soma_PBS_videos,1)]);
-% yticklabels(soma_PBS_labels);
-% Make new tick marks.
 xlim([-round(max_soma_time) round(max_soma_time)]);
 xl = xlim(); % Get existing range.
 ylim([0 highestYAxis]);

@@ -4,6 +4,7 @@ Table = sortrows(Table, 'Image');
 % Isolate Image ID and Cell ID
 Image = Table.Image;
 CELL_ID = Table.CELL_ID;
+Soma_ROI = Table.Final_calcium_soma;
 % Eliminate repeat Image ID's
 [u_Image, idx] = unique(Image, 'Rows');
 idx = sort(idx);
@@ -78,6 +79,6 @@ for ii = 1:length(u_Image)
         
     end
 end
+return CELL_Activity
 
-end
         

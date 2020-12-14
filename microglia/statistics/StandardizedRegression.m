@@ -1,0 +1,1 @@
+function [Rsquare, fitLine, beta] = StandardizedRegression(x, y)

@@ -1,4 +1,4 @@
-function map_ca_rev5(soma_data, process_data)
+function map_ca_rev6(soma_data, process_data)
 % this function takes the output from the "excel_matching" function and
 % creates a heatmap proportional to the number of cell arrays within
 % excel_matching. Nested sorting built into function. Written by John Wagner. I do not claim that this is an
@@ -36,7 +36,7 @@ before_soma_timeHitRadius1(:,:) = NaN;
 for jj = 1:size(sorted_F,1)
 % % calculate dF/F first
     F0 = mean(sorted_F(jj,1:50));
-    dF_sorted(jj,:) = (sorted_F(jj,:)-F0)./F0;
+    dF_sorted(jj,:) = (sorted_F(jj,:));%-F0);%./F0;
     % % Do an initial shift to line up soma_timeHitRadius1's
     % % absolute value makes sense. think about circles
     dF_first_shift(jj,:) = circshift(dF_sorted(jj,:),-soma_time_shifts(jj)+n+1);
@@ -92,7 +92,7 @@ before_process_timeHitRadius1(:,:) = NaN;
 for jj = 1:size(sorted_F,1)
 % % calculate dF/F first
     F0 = mean(sorted_F(jj,1:50));
-    dF_sorted(jj,:) = (sorted_F(jj,:)-F0)./F0;
+    dF_sorted(jj,:) = (sorted_F(jj,:));%-F0);%./F0;
     % % Do an initial shift to line up process_timeHitRadius1's
     % % absolute value makes sense. think about circles
     dF_first_shift(jj,:) = circshift(dF_sorted(jj,:),-process_time_shifts(jj)+n+1);
@@ -119,6 +119,7 @@ end
 % % % soma PBS/TMEV
 soma_TMEV_logicals = contains(soma_data(:,4),'TMEV');
 somaTmevInclude = soma_TMEV_logicals(include);
+
 % rows where TMEV occurs
 soma_TMEV_dF = soma_dF_shifted(somaTmevInclude,:);
 % extract main table data
@@ -126,6 +127,10 @@ soma_TMEV_extracted = soma_data(soma_TMEV_logicals,:);
 for k = 1:size(soma_TMEV_dF,1)
 soma_TMEV_extracted{k,3} = soma_TMEV_dF(k,:);
 end
+allDPI = cell2mat(soma_TMEV_extracted(:,5));
+soma_TMEV2_dF = soma_TMEV_dF(1:19,:);
+soma_TMEV5_dF = soma_TMEV_dF(20:40,:);
+soma_TMEV15_dF = soma_TMEV_dF(41:end,:);
 % repeat for PBS group
 soma_PBS_logicals = contains(soma_data(:,4),'PBS');
 somaPbsInclude = soma_PBS_logicals(include);
@@ -160,6 +165,9 @@ p_TMEV_extracted = process_data(p_TMEV_logicals,:);
 for k = 1:size(p_TMEV_dF,1)
 p_TMEV_extracted{k,3} = p_TMEV_dF(k,:);
 end
+p_TMEV2_dF = p_TMEV_dF(1:64,:);
+p_TMEV5_dF = p_TMEV_dF(65:80,:);
+p_TMEV15_dF = p_TMEV_dF(81:end,:);
 % repeat for PBS group
 p_PBS_logicals = contains(process_data(:,4),'PBS'); 
 pPbsInclude = p_PBS_logicals(pinclude);
@@ -210,127 +218,32 @@ highestValue = max([somaTMEVmax, somaPBSmax, pTMEVmax, pPBSmax]);
 lowestValue = min([somaTMEVmin, somaPBSmin, pTMEVmin, pPBSmin]);
 
 highestValue = 6;
-lowestValue = -2;
+lowestValue = -1;
+highestValue = 1600;
+lowestValue = 0;
 
 highestYAxis = max([size(soma_PBS_dF,1),size(soma_TMEV_dF,1), size(p_PBS_dF,1), size(p_TMEV_dF,1)]); 
 %% let the heatmapping begin!
+time = 1740/0.97; %seconds
+% myColorMap = parula(30);
+myColorMap = parula(7);
+myColorMap(3,:) = [159/256, 159/256, 95/256];
+myColorMap(4,:) = [1, 1, 0];
+myColorMap(5,:) = [255/256, 127/256, 0];
+myColorMap(6,:) = [1, 0, 0];
+myColorMap(7,:) = [139/256, 0, 0];
+% very non saturated yellow: [159/256, 159/256, 95/256]
 % % % SOMA PBS % % %
-somaPbs = figure();
-h1 = imagesc([-max_soma_time max_soma_time], [1 size(soma_PBS_dF,1)],soma_PBS_dF);
-axisLines = gca;
-set(axisLines,'Parent',somaPbs,'YDir','normal', ...
-    'XColor', [137/255 137/255 137/255],'YColor', [137/255 137/255 137/255], ...
-    'FontSize',10,'FontName','Arial','Color','none');
-% yticks([1:size(soma_PBS_videos,1)]);
-% yticklabels(soma_PBS_labels);
-% Make new tick marks.
-xlim([-round(max_soma_time) round(max_soma_time)]);
-xl = xlim(); % Get existing range.
-ylim([0 highestYAxis]);
-xTickLocations = [round(xl(1)) 0 round(xl(2))];
-yTickLocations = [round(size(soma_PBS_dF,1)/4), round(size(soma_PBS_dF,1)/1.5)];
-set(axisLines,'XTick', xTickLocations, ...
-    'YTick',yTickLocations);
-% Make new labels for the new tick marks
-set(axisLines,'XTickLabel', {num2str(round(xl(1)/60)), num2str(0), num2str(round(xl(2)/60))});
-title('PBS Soma','FontWeight','Normal'); %xlabel(labels,'Time (min)'); ylabel('ROI');
-set(axisLines,'TickLabelInterpreter','none');
-set(h1,'AlphaData',~isnan(soma_PBS_dF));
-set(gcf, 'Units','inches','position',[4 4 1.5 1.5]);
-set(gca, 'FontName','Arial');
-set(gcf, 'PaperUnits', 'inches');
-set(gcf, 'PaperPosition', [4 4 1.5 1.5]);
-myColorMap = parula(32);
-caxis(gca,[lowestValue, highestValue]);
-colormap(myColorMap);
-colorbar
-hold on
-line(axisLines,[0, 0], [0 size(soma_PBS_dF,2)], 'Color', 'red','LineStyle','--','LineWidth',1);
-savefig('Heatmap_Soma_PBS.fig');
-
+HMMatrix(time, size(soma_PBS_dF,1), soma_PBS_dF, highestYAxis,lowestValue, highestValue,'Soma PBS',myColorMap)
 % % % RROCESS PBS % % %
-% ax(2) = subplot(2,2,2); % top right plot will be process pbs
-figure()
-h2 = imagesc([-max_process_time max_process_time], [1 size(p_PBS_dF,1)], p_PBS_dF);
-% yticks([1:size(p_PBS_videos,1)]);
-% yticklabels(p_PBS_labels);
-% Make new tick marks.
-xlim([-round(max_process_time) round(max_process_time)]);
-xl = xlim(); % Get existing range.
-xTickLocations = [round(xl(1)) 0 round(xl(2))];
-set(gca,'XTick', xTickLocations);
-% Make new labels for the new tick marks
-set(gca,'XTickLabel', {num2str(round(xl(1)/60)), num2str(0), num2str(round(xl(2)/60))});
-set(gca,'YDir','reverse');
-title('PBS Process','FontWeight','Normal'); xlabel('Time (sec)'); ylabel('Video, DPI, ROI #');
-set(gca,'TickLabelInterpreter','none');
-set(h2,'AlphaData',~isnan(p_PBS_dF));
-set(gcf, 'Units','inches','position',[4 4 1.5 1.5]);
-set(gca,'FontSize',10,'XColor', [137/255 137/255 137/255],'YColor', [137/255 137/255 137/255],'FontName','Arial');
-set(gca, 'FontName','Arial');
-set(gcf, 'PaperUnits', 'inches');
-set(gcf, 'PaperPosition', [4 4 1.5 1.5]);
-caxis(gca,[lowestValue, highestValue]);
-colormap(myColorMap);
-colorbar
-hold on;
-line([0, 0], [0 size(p_PBS_dF,2)], 'Color', 'red','LineStyle','--','LineWidth',1);
-savefig('Heatmap_Processes_PBS.fig');
+HMMatrix(time, size(p_PBS_dF,1), p_PBS_dF, highestYAxis,lowestValue, highestValue,'Processes PBS',myColorMap)
 % % % SOMA TMEV % % %
-% ax(3) = subplot(2,2,3); % bottom left plot will be soma tmev
-figure()
-h3 = imagesc([-max_soma_time max_soma_time], [1 size(soma_TMEV_dF,1)], soma_TMEV_dF);
-% yticks([1:size(soma_TMEV_videos,1)]);
-% yticklabels(soma_TMEV_labels);
-% Make new tick marks.
-xlim([-round(max_soma_time) round(max_soma_time)]);
-xl = xlim(); % Get existing range.
-xTickLocations = [round(xl(1)) 0 round(xl(2))];
-set(gca,'XTick', xTickLocations);
-% Make new labels for the new tick marks
-set(gca,'XTickLabel', {num2str(round(xl(1)/60)), num2str(0), num2str(round(xl(2)/60))});
-set(gca,'YDir','reverse');
-title('TMEV Soma','FontWeight','Normal'); xlabel('Time (sec)'); ylabel('Video, DPI, ROI #');
-set(gca,'TickLabelInterpreter','none');
-set(h3,'AlphaData',~isnan(soma_TMEV_dF));
-set(gcf, 'Units','inches','position',[4 4 1.5 1.5]);
-set(gca,'FontSize',10,'XColor', [137/255 137/255 137/255],'YColor', [137/255 137/255 137/255],'FontName','Arial');
-set(gca, 'FontName','Arial');
-set(gcf, 'PaperUnits', 'inches');
-set(gcf, 'PaperPosition', [4 4 1.5 1.5]);
-caxis(gca,[lowestValue, highestValue]);
-colormap(myColorMap);
-colorbar
-hold on;
-line([0, 0], [0 size(soma_TMEV_dF,2)], 'Color', 'red','LineStyle','--','LineWidth',1);
-savefig('Heatmap_Soma_TMEV.fig');
+HMMatrix(time, size(soma_TMEV2_dF,1), soma_TMEV2_dF, highestYAxis,lowestValue, highestValue,'Soma TMEV 2 DPI',myColorMap)
+HMMatrix(time, size(soma_TMEV5_dF,1), soma_TMEV5_dF, highestYAxis,lowestValue, highestValue,'Soma TMEV 5 DPI',myColorMap)
+HMMatrix(time, size(soma_TMEV15_dF,1), soma_TMEV15_dF, highestYAxis,lowestValue, highestValue,'Soma TMEV 15 DPI',myColorMap)
 % % % PROCESS TMEV % % %
-% ax(4) = subplot(2,2,4); % bottom right plot will be process tmev
-figure()
-h4 = imagesc([-max_process_time max_process_time], [1 size(p_TMEV_dF,1)], p_TMEV_dF);
-% yticks([1:size(p_TMEV_videos,1)]);
-% yticklabels(p_TMEV_labels);
-% Make new tick marks.
-xlim([-round(max_process_time) round(max_process_time)]);
-xl = xlim(); % Get existing range.
-xTickLocations = [round(xl(1)) 0 round(xl(2))];
-set(gca,'XTick', xTickLocations);
-% Make new labels for the new tick marks
-set(gca,'XTickLabel', {num2str(round(xl(1)/60)), num2str(0), num2str(round(xl(2)/60))});
-set(gca,'YDir','reverse');
-title('TMEV Process','FontWeight','Normal'); xlabel('Time (sec)'); ylabel('Video, DPI, ROI #');
-set(gca,'TickLabelInterpreter','none');
-set(h4,'AlphaData',~isnan(p_TMEV_dF));
-set(gcf, 'Units','inches','position',[4 4 1.5 1.5]);
-set(gca,'FontSize',10,'XColor', [137/255 137/255 137/255],'YColor', [137/255 137/255 137/255],'FontName','Arial');
-set(gca, 'FontName','Arial');
-set(gcf, 'PaperUnits', 'inches');
-set(gcf, 'PaperPosition', [4 4 1.5 1.5]);
-caxis(gca,[lowestValue, highestValue]);
-colormap(myColorMap);
-colorbar
-hold on;
-line([0, 0], [0 size(p_TMEV_dF,2)], 'Color', 'red','LineStyle','--','LineWidth',1);
-savefig('Heatmap_Processes_TMEV.fig');
+HMMatrix(time, size(p_TMEV2_dF,1), p_TMEV2_dF, highestYAxis,lowestValue, highestValue,'Processes TMEV 2 DPI',myColorMap)
+HMMatrix(time, size(p_TMEV5_dF,1), p_TMEV5_dF, highestYAxis,lowestValue, highestValue,'Processes TMEV 5 DPI',myColorMap)
+HMMatrix(time, size(p_TMEV15_dF,1), p_TMEV15_dF, highestYAxis,lowestValue, highestValue,'Processes TMEV 15 DPI',myColorMap)
 end
     
