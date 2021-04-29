@@ -1,25 +1,17 @@
-function [CELL_Activity, VIDEO_Activity] = PerCell(ProcessedEvents)
-Table = load_burn_excel();
-Table = sortrows(Table, 'Image');
+function [CELL_Activity] = PerCell(Table, ProcessedEvents)
+if ~nargin
+    error('No valid input arguments given.')
+end
+CELL_Activity = struct();
 % Isolate Image ID and Cell ID
 Image = Table.Image;
-CELL_ID = Table.CELL_ID;
+%CELL_ID = Table.CELL_ID;
 % Eliminate repeat Image ID's
 [u_Image, idx] = unique(Image, 'Rows');
 idx = sort(idx);
 u_Image = sort(u_Image);
 ImageID = num2str(u_Image);
 
-% % For each Image
-    % % For each Cell IID
-        % % Look at suite2p Soma ROI
-            % % Say if suite2p soma had event
-        % % END
-        % % Frequency of events, etc. for each cell
-    % % END
-    % % Percent of cells w/ active events
-    % % Num. of cells per image
-% % END
 eventTracks = fieldnames(ProcessedEvents);
 for ii = 1:length(u_Image)
     %%% Extract rows corresponding to a single video
@@ -29,53 +21,67 @@ for ii = 1:length(u_Image)
         subTable = Table(size(Table,1)-idx(ii),:);
     end
     tempCELL_ID = subTable.CELL_ID;
+    tempMice = subTable.Mouse;
+    tempMice = tempMice(~isnan(tempMice));
     tempCellCell = tempCELL_ID(~isnan(tempCELL_ID));
     tempTracks = subTable.TrackID;
     tempTrackCells = tempTracks(~isnan(tempCELL_ID));
     currentVideo = strcat('T',ImageID(ii,:));
+    timehitR = subTable.TimeHitRadius1;
+    
     for i = 1:length(tempTrackCells)
         cellField = strcat('C',num2str(tempCellCell(i)));
         for j = 1:length(eventTracks)
             if strcmp(tempTracks(i),eventTracks(j))
                 tempEvents = ProcessedEvents.(eventTracks{j}).PeakLocs;
+                tempTimeHitR = ProcessedEvents.(eventTracks{j}).timehitR;
                 tempEvents = tempEvents(~isnan(tempEvents));
+                tempP1Events = tempEvents(tempEvents <= 90);
+                tempP2Events = tempEvents((tempEvents > 90) & (tempEvents < tempTimeHitR.*0.97));
+                tempP3Events = tempEvents(tempEvents >= round(timehitR(i).*0.97));
                 try
                     if isfield(CELL_Activity.(currentVideo), cellField)
                         tempEvents = numel(tempEvents) +  CELL_Activity.(currentVideo).(cellField).eventCount;
+                        tempP1Events = numel(tempP1Events) +  CELL_Activity.(currentVideo).(cellField).Phase1.eventCount;
+                        tempP2Events = numel(tempP2Events) +  CELL_Activity.(currentVideo).(cellField).Phase2.eventCount;
+                        tempP3Events = numel(tempP3Events) +  CELL_Activity.(currentVideo).(cellField).Phase3.eventCount;
                         CELL_Activity.(currentVideo).(cellField).eventCount = tempEvents;
+                        CELL_Activity.(currentVideo).(cellField).MouseID = tempMice(1);
+                        CELL_Activity.(currentVideo).(cellField).Phase1.eventCount = tempP1Events;
+                        CELL_Activity.(currentVideo).(cellField).Phase2.eventCount = tempP2Events;
+                        CELL_Activity.(currentVideo).(cellField).Phase3.eventCount = tempP3Events;
+                        CELL_Activity.(currentVideo).(cellField).numProcesses = CELL_Activity.(currentVideo).(cellField).numProcesses + 1;
                     else
                         CELL_Activity.(currentVideo).(cellField).eventCount = numel(tempEvents);
+                        CELL_Activity.(currentVideo).(cellField).Phase1.eventCount = numel(tempP1Events);
+                        CELL_Activity.(currentVideo).(cellField).Phase2.eventCount = numel(tempP2Events);
+                        CELL_Activity.(currentVideo).(cellField).Phase3.eventCount = numel(tempP3Events);
+                        CELL_Activity.(currentVideo).(cellField).numProcesses = 1;
+                        CELL_Activity.(currentVideo).(cellField).MouseID = tempMice(1);
                     end
                 catch
                     CELL_Activity.(currentVideo).(cellField).eventCount = numel(tempEvents);
+                    CELL_Activity.(currentVideo).(cellField).Phase1.eventCount = numel(tempP1Events);
+                    CELL_Activity.(currentVideo).(cellField).Phase2.eventCount = numel(tempP2Events);
+                    CELL_Activity.(currentVideo).(cellField).Phase3.eventCount = numel(tempP3Events);
+                    CELL_Activity.(currentVideo).(cellField).numProcesses = 1;
+                    CELL_Activity.(currentVideo).(cellField).MouseID = tempMice(1);
                 end
             else
                 try
-                    if ~any(~cellfun('isempty',strfind(eventTracks,tempTracks(i)))) && ~isfield(CELL_Activity.(currentVideo), cellField)
+                    if ~contains(eventTracks,tempTracks(i)) && ~isfield(CELL_Activity.(currentVideo), cellField)
                         CELL_Activity.(currentVideo).(cellField).eventCount = 0;
+                        CELL_Activity.(currentVideo).(cellField).Phase1.eventCount = 0;
+                        CELL_Activity.(currentVideo).(cellField).Phase2.eventCount = 0;
+                        CELL_Activity.(currentVideo).(cellField).Phase3.eventCount = 0;
+                        CELL_Activity.(currentVideo).(cellField).numProcesses = 0;
+                        CELL_Activity.(currentVideo).(cellField).MouseID = tempMice(1);
                     end
                 catch
 
                 end
             end
         end
-    end
-    unique_cells = unique(tempCELL_ID);
-    unique_cells = unique_cells(~isnan(unique_cells));
-    tempACTIVE = subTable.Final_soma;
-    tempACTIVE = tempACTIVE(~cellfun(@isempty,tempACTIVE));
-    total_cells = numel(unique_cells);
-    active_cells = numel(tempACTIVE);
-    
-    if total_cells ~= 0
-        VIDEO_Activity.(currentVideo(:)).percent_active_cells = (active_cells/total_cells)*100;
-    end
-    for jj = 1:size(unique_cells,1)
-        % Immediately check for NaN's in CELL_ID or if roi =/= soma
-        if any(isnan(tempCELL_ID)) || any(cellfun(@isempty,subTable.Final_soma)==1)
-            continue
-        end
-        
     end
 end
 

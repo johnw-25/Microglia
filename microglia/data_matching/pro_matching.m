@@ -83,17 +83,19 @@ excel_table = struct2table(excel_structure);
 excel_cells = table2cell(excel_table);
 % create cell array with same #of rows as excel_cells/table
 % final_matched data will have all the matched data -- map_ca sorts
-final_matched_data = cell(size(excel_table,1),9);
+final_matched_data = cell(size(excel_table,1),11);
 % % % % Insert excel and suite2p data into columns of final_matched
 % % ADD MEAN_velocity OR TIME_HITS_R_1/2 (1 of 2 columns)
 % % AND CELL ID
-final_matched_data(:,1) = excel_table.TrackID;
+maxD = excel_table.MaxD2Rum - excel_table.radius_1_from_area;
+radius = excel_table.radius_1_from_area;
 ROIs = excel_table.Final_calcium_process;
 ROIs = num2cell(ROIs);
 mouseNums = num2cell(excel_table.Mouse);
 cellID = num2cell(excel_table.CELL_ID);
 images = num2cell(excel_table.Image);
 
+final_matched_data(:,1) = excel_table.TrackID;
 final_matched_data(:,2) = ROIs;
 final_matched_data(:,3) = excel_table.suite2pF;
 final_matched_data(:,4) = excel_table.Groups;
@@ -102,6 +104,8 @@ final_matched_data(:,6) = num2cell(excel_table.TimeHitRadius1);
 final_matched_data(:,7) = mouseNums;
 final_matched_data(:,8) = cellID;
 final_matched_data(:,9) = images;
+final_matched_data(:,10) = num2cell(maxD);
+final_matched_data(:,11) = num2cell(radius);
 % % % % done inserting excel data -- now delete rows w/ empty suite2pF
 empty_cells = any(cellfun('isempty',final_matched_data),2);
 final_matched_data(empty_cells,:) = [];

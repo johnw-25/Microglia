@@ -1,8 +1,4 @@
 function [data_names, MyData, iscell_list] = loads2p()
-%% Load spont. suite2p data
-clc
-% sampling rate
-Fs = 0.96; % Hz (frame per second)
 % Path of the main folder : Rotation
 main_suite2p = uigetdir;
 % Get all the subfolders
@@ -11,8 +7,8 @@ SubFold = videos([videos.isdir]); % keep only the directories
 filelist = dir(fullfile(main_suite2p, '**\*.mat'));  % get list of mat files in any subfolder
 iscell_files = dir(fullfile(main_suite2p, '**\iscell.npy')); % extract all iscell files 
 % Loop on each folder
-MyData = [];
-iscell_list = [];
+MyData = cell(length(filelist),1);
+iscell_list = cell(length(filelist),1);
 for i = 1:length(filelist) % 1 to number of Fall.mat files
   filetoread = fullfile(filelist(i).folder,'Fall.mat'); % extract suite2p data from video subfolders
   iscell_toread = fullfile(filelist(i).folder,'iscell.npy');

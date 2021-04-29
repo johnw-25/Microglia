@@ -5,13 +5,14 @@ if isstruct(DATA)
     fig = figure();
     t = title(Pathology,'FontWeight','Normal');
     titlePos = get(t, 'position');
-    titlePos(2) = titlePos(2) + 115;
+    titlePos(2) = titlePos(2) + 135;
     set(t, 'position',titlePos,'FontSize',8);
     for k = 1:numel(fields)
         temp_timehitR = DATA.(fields{k}).timehitR;
         R = round(temp_timehitR*0.97, 1);
         tempLocs = DATA.(fields{k}).PeakLocs;
         tempLocs = tempLocs(~isnan(tempLocs));
+        tempLocs = tempLocs(tempLocs > 90);
         frames = length(DATA.(fields{k}).trace);
         if temp_timehitR > frames
             shiftedLocs = (tempLocs - R)./0.97;
@@ -22,24 +23,24 @@ if isstruct(DATA)
         shiftedLocs = shiftedLocs./60;
         K = ones(size(shiftedLocs))*k;
         hold on
-        plot(shiftedLocs, K, '.k', 'MarkerFaceColor','k','MarkerSize',3);
+        plot(shiftedLocs, K, '.k', 'MarkerFaceColor','k','MarkerSize',6);
     end
     ylim([0 numel(fields)]);
     yl = ylim;
-    yticks(yl(2));
+    yticks(yMax);
     hold on
-    line([0, 0], [0, yl(2)],'Color','blue','LineStyle','-','LineWidth',1);    
-%     yTickMin = ChangeTextColor(num2str(round(yl(2)/4)), [0, 0, 0]);
-    yTickMax = ChangeTextColor(num2str(round(yl(2))), [0, 0, 0]);
+    midLine = line([0, 0], [0, yMax],'Color',[0.5, 0.5, 0.5],'LineStyle','-','LineWidth',1);
+    uistack(midLine,'top');
+    yTickMax = ChangeTextColor(num2str(yMax), [0, 0, 0]);
     roiTicks = {yTickMax};
     ylim([0 yMax])
     xlim(xlimit);
     xticks([xlimit(1) 0 xlimit(2)]); 
-    set(gcf, 'Units','inches','position',[4 4 1.75 1.75]);
+    set(gcf, 'Units','inches','position',[4 4 1.5 1.75]);
     set(gca,'FontSize',10,'XColor', [137/255 137/255 137/255],'YColor', [137/255 137/255 137/255],'FontName','Arial');
     set(gca, 'FontName','Arial');
     set(gcf, 'PaperUnits', 'inches');
-    set(gcf, 'PaperPosition', [4 4 1.5 1.5]);
+    set(gcf, 'PaperPosition', [4 4 0.75 1.5]);
     timeLabel = sprintf('\\color[rgb]{%f, %f, %f}%s', [0 0 0], 'Time (min)');
     minTimeTick = sprintf('\\color[rgb]{%f, %f, %f}%s', [0 0 0], num2str(xlimit(1)));
     time0Tick = sprintf('\\color[rgb]{%f, %f, %f}%s', [0 0 0], num2str(0));
@@ -48,7 +49,6 @@ if isstruct(DATA)
     set(gca,'XTickLabel',timeTicks,'YTickLabel', roiTicks);
     xlabel(timeLabel);
     set(t,'FontSize',8);
-%     saveas(fig, strcat(Pathology,'_DotPlot.png'), '-r600');
     print(fig, strcat(Pathology,'_DotPlot.png'), '-r600','-dpng');
 else
     error('Function not defined for DATA input being non-structure.')

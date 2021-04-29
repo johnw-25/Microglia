@@ -1,11 +1,12 @@
-function [PBS_Data,TimeZones] = DataOrganizer(PBS, DATA, burnFrame) 
-isburn = @(x) logical(x>90);
+function [PBS_Data,TimeZones,allRawF] = DataOrganizer(PBS, DATA, burnFrame) 
+isburn = @(x) logical(x>burnFrame);
 burnFlag = false;
 PBSfields = fieldnames(PBS);
 allPBSLocs = []; %allocate space
 allPBSPeaks = [];
 allPeakDurs = [];
 all_RAWauc = [];
+allMaxD = [];
 all_auc = [];
 allIEI = [];
 allLocs = [];
@@ -21,7 +22,7 @@ allPBSShiftedLocs = {};
 allPBSEventGroup = {};
 allPBSMice = {};
 allPBSIEI = {};
-
+allTimeHitR = {};
 Group1_AUC = [];
 Group2_AUC = [];
 Group3_AUC = [];
@@ -41,10 +42,22 @@ Group3_Locs = [];
 Group1_IEI = [];
 Group2_IEI = [];
 Group3_IEI = [];
-% % count number of mice for PBS % %
-mice = DATA(:,7);
-for k = 1:numel(PBSfields)
 
+allRawF = zeros(1740,size(DATA,1));
+for i = 1:size(DATA,1)
+    tempF = DATA{i,3}';
+    allRawF(1:length(tempF),i) = tempF;
+end
+
+for k = 1:numel(PBSfields)
+    for j = 1:size(DATA, 1)
+        for y = 1:numel(PBSfields)
+            if strcmp(DATA{j,1},PBSfields{y})
+                tempMouse = DATA(j,7);
+                tempMaxD = DATA{j,10};
+            end
+        end
+    end
     % extract
     tempIEI = PBS.(PBSfields{k}).IEI;
     temp_timehitR = PBS.(PBSfields{k}).timehitR;
@@ -65,8 +78,6 @@ for k = 1:numel(PBSfields)
     tempAUC = abs(tempAUC(~isnan(tempAUC)));
     tempPeaks = PBS.(PBSfields{k}).PeakMags;
     tempPeaks = tempPeaks(~isnan(tempPeaks));
-
-    
     % update all trace names
     for i = 1:length(tempRAWAUC)
         allPBSTraces = [allPBSTraces; PBSfields(k)];
@@ -78,6 +89,11 @@ for k = 1:numel(PBSfields)
         allPBSDPI = [allPBSDPI; PBS.(PBSfields{k}).DPI];
         allPBSNormalLocs = [allPBSNormalLocs; tempLocs(i)];
         allPBSShiftedLocs = [allPBSShiftedLocs; tempLocs(i)-round(temp_timehitR*0.97)];
+        allTimeHitR = [allTimeHitR; temp_timehitR];
+        allPBSMice = [allPBSMice, tempMouse];
+        allMaxD = [allMaxD, tempMaxD];
+        
+         
         if i <= length(tempIEI)
             allPBSIEI = [allPBSIEI; tempIEI(i)];
         else
@@ -107,7 +123,7 @@ for k = 1:numel(PBSfields)
         %%%%% Break up into 3 groups (burn, b/w burn and timehitR, post
         %%%%% timehitR)
         temp_Group1_AUC = tempRAWAUC(tempLocs <= burnFrame);
-        temp_Group2_AUC = tempRAWAUC((isburn(tempLocs)) & (tempLocs < round(temp_timehitR*0.97)));
+        temp_Group2_AUC = tempRAWAUC((tempLocs > burnFrame) & (tempLocs < round(temp_timehitR*0.97)));
         temp_Group3_AUC = tempRAWAUC(tempLocs >=  round(temp_timehitR*0.97));
         Group1_AUC = [Group1_AUC; temp_Group1_AUC];
         Group2_AUC = [Group2_AUC; temp_Group2_AUC];
@@ -155,13 +171,7 @@ for k = 1:numel(PBSfields)
     allPBSLocs = [allPBSLocs; shiftedLocs];
     allPeakDurs = [allPeakDurs; tempDurs];
 end
-for j = 1:length(mice)
-    for k = 1:length(allPBSTraces)
-        if strcmp(DATA{j,1},allPBSTraces{k})
-            allPBSMice = [allPBSMice; mice(j)];
-        end
-    end
-end
+
 TimeZones.Zone1_Locs = Group1_Locs;
 TimeZones.Zone2_Locs = Group2_Locs;
 TimeZones.Zone3_Locs = Group3_Locs;
@@ -182,7 +192,7 @@ TimeZones.Zone1_IEI = Group1_IEI;
 TimeZones.Zone2_IEI = Group2_IEI;
 TimeZones.Zone3_IEI = Group3_IEI;
 
-PBS_Data = cell(length(allPBSTraces)+1, 12);
-PBS_Data(1,:) = {'Trace Name','ROI #','DPI','TMEV/PBS','Duration','Peak Amp','AUC','Peak Locations','Shifted Locations','Event Group','MouseID','IEI'};
-PBS_Data(2:end,:) = [allPBSTraces,allPBSROI, allPBSDPI, allPBSpath, allPBSDurs,allPBSMags,allPBSAUC,allPBSNormalLocs,allPBSShiftedLocs,allPBSEventGroup,allPBSMice,allPBSIEI];
+PBS_Data = cell(length(allPBSTraces)+1, 14);
+PBS_Data(1,:) = {'Trace Name','ROI #','DPI','TMEV/PBS','Duration','Peak Amp','AUC','Peak Locations','Shifted Locations','Event Group','MouseID','IEI','TimeHitR','MaxD'};
+PBS_Data(2:end,:) = [allPBSTraces,allPBSROI, allPBSDPI, allPBSpath, allPBSDurs,allPBSMags,allPBSAUC,allPBSNormalLocs,allPBSShiftedLocs,allPBSEventGroup,allPBSMice',allPBSIEI,allTimeHitR,num2cell(allMaxD')];
 end

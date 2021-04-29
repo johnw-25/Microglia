@@ -6,7 +6,8 @@ sLengthC = zeros(size(DATA,1),1);
 lineTransparency = 0.15;
 increaseColor = [71, 91, 249]./256; % Orange: [254/256, 127/256, 0/256]
 decreaseColor = [71, 91, 249]./256;
-LPF = noiseRemover(100, 0.012, 0.97);
+% LPF = noiseRemover(100, 0.012, 0.97);
+LPF = noiseRemover(100, 0.485, 0.97);
 videos = [];
 for ii = 1:size(DATA,1)
     currentVideo = DATA{ii,1};
@@ -124,12 +125,12 @@ set(gcf, 'PaperPosition', [4 4 xDim yDim]);
 set(findobj(gcf,'LineStyle','--'),'LineStyle','-','LineWidth',2)
 set(findobj(gca,'tag','Median'),'LineWidth',1.5,'Color',[0,0,0])
 ylimit = ylim;
-ylim([-4, -1.5]);
-yticks(-4:0.5:-1.5);
-yTickL = {ChangeTextColor(num2str(-4), [0, 0, 0]),ChangeTextColor(num2str(-3.5), [0, 0, 0]),...
-    ChangeTextColor(num2str(-3.0), [0, 0, 0]),ChangeTextColor(num2str(-2.5), [0, 0, 0]),...
-    ChangeTextColor(num2str(-2.0), [0, 0, 0]),ChangeTextColor(num2str(-1.5), [0, 0, 0])};
-set(gca,'YTickLabel',yTickL');
+% ylim([-4, -1.5]);
+% yticks(-4:0.5:-1.5);
+% yTickL = {ChangeTextColor(num2str(-4), [0, 0, 0]),ChangeTextColor(num2str(-3.5), [0, 0, 0]),...
+%     ChangeTextColor(num2str(-3.0), [0, 0, 0]),ChangeTextColor(num2str(-2.5), [0, 0, 0]),...
+%     ChangeTextColor(num2str(-2.0), [0, 0, 0]),ChangeTextColor(num2str(-1.5), [0, 0, 0])};
+% set(gca,'YTickLabel',yTickL');
 set(gca, 'TickLabelInterpreter', 'tex');
 % title(strcat(Pathology,': Path Length'));
 print(gcf,strcat(Pathology,'_PathLengthBoxPlots.png'), '-r900','-dpng');
@@ -165,12 +166,12 @@ end
 plot11 = plot([1,2], [mean(sLengthA), mean(sLengthB)],'Color',[0 0 0],'LineWidth',3);
 plot12 = plot([2,3], [mean(sLengthB), mean(sLengthC)],'Color',[0 0 0],'LineWidth',3);
 ylimit = ylim;
-ylim([-4, -1.5]);
-yticks(-4:0.5:-1.5);
-yTickL = {ChangeTextColor(num2str(-4), [0, 0, 0]),ChangeTextColor(num2str(-3.5), [0, 0, 0]),...
-    ChangeTextColor(num2str(-3.0), [0, 0, 0]),ChangeTextColor(num2str(-2.5), [0, 0, 0]),...
-    ChangeTextColor(num2str(-2.0), [0, 0, 0]),ChangeTextColor(num2str(-1.5), [0, 0, 0])};
-set(gca,'YTickLabel',yTickL');
+% ylim([-4, -1.5]);
+% yticks(-4:0.5:-1.5);
+% yTickL = {ChangeTextColor(num2str(-4), [0, 0, 0]),ChangeTextColor(num2str(-3.5), [0, 0, 0]),...
+%     ChangeTextColor(num2str(-3.0), [0, 0, 0]),ChangeTextColor(num2str(-2.5), [0, 0, 0]),...
+%     ChangeTextColor(num2str(-2.0), [0, 0, 0]),ChangeTextColor(num2str(-1.5), [0, 0, 0])};
+% set(gca,'YTickLabel',yTickL');
 set(gca, 'TickLabelInterpreter', 'tex');
 set(gcf, 'Units','inches','position',[4 4 xDim yDim]);
 set(gca,'FontSize',10,'XColor', [1 1 1],'YColor', [137/255 137/255 137/255],'FontName','Arial');

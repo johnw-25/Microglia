@@ -7,11 +7,12 @@ allRMS{1,5} = 'B(201 to timehitR) RMS^2';
 allRMS{1,6} = 'C(timehitR to end) RMS^2';
 allRMS{1,7} = 'timehitR Marker/Index';
 if strcmp(filterSelect, 'LPF')
-    LPF = noiseRemover(100,0.012,0.97);
+%     LPF = noiseRemover(100,0.012,0.97);
+    LPF = noiseRemover(100,0.1,0.97);
 end
 for ii = 1:size(DATA,1)
     % check if trace should be deleted/not included
-    if DATA{ii,8}
+%     if DATA{ii,8}
         ROInum = DATA{ii,2};
         ROInum = num2str(ROInum);
         ROI = strcat('  ROI: ', ROInum);
@@ -48,8 +49,8 @@ for ii = 1:size(DATA,1)
             allRMS{ii+1,5} = NaN;
             allRMS{ii+1,6} = NaN;
         end
-    else
-        continue
-    end
+%     else
+%         continue
+%     end
 end
 end

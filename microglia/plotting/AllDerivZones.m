@@ -118,11 +118,26 @@ PVALUES.Zone3.Tmev5_Tmev15 = ranksum(tmev5LengthC, tmev15LengthC);
 
 zone1Groups = [ones(length(pbsLengthA),1); ones(length(tmev2LengthA),1)*2; ones(length(tmev5LengthA),1)*3; ones(length(tmev15LengthA),1)*4];
 zone1Data = log10([pbsLengthA; tmev2LengthA; tmev5LengthA; tmev15LengthA]);
+boxData = log10([pbsLengthA, tmev2LengthA, tmev5LengthA, tmev15LengthA]);
 figure()
 boxplot(zone1Data,zone1Groups, 'Widths',0.35, 'Colors', [0 0 0],'OutlierSize',3,'Symbol','');
 h = findobj(gca,'Tag','Box');
+upperWhiskers = findobj(gca,'Tag','Upper Whisker');
+upperAdjVal = findobj(gca,'Tag','Upper Adjacent Value');
+lowerWhiskers = findobj(gca,'Tag','Lower Whisker');
+lowerAdjVal = findobj(gca,'Tag','Lower Adjacent Value');
+outliers = findobj(gca,'Tag','Outliers');
 for j=1:length(h)
     patch(get(h(j),'XData'),get(h(j),'YData'),boxColors(j,:),'FaceAlpha',.5);
+    groupData = boxData(:,j);
+    [data_highpercent(j)] = quantile(groupData,0.95);
+    [data_lowpercent(j)] = quantile(groupData,1.00-0.95);
+    upperLims = get(upperWhiskers(length(h)-j+1),'ydata');
+    lowerLims = get(lowerWhiskers(length(h)-j+1),'ydata');
+    set(upperWhiskers(length(h)-j+1),'ydata',[upperLims(1), data_highpercent(j)]);
+    set(upperAdjVal(length(h)-j+1),'ydata',[data_highpercent(j), data_highpercent(j)]);
+    set(lowerWhiskers(length(h)-j+1),'ydata',[data_lowpercent(j), lowerLims(2)]);
+    set(lowerAdjVal(length(h)-j+1),'ydata',[data_lowpercent(j), data_lowpercent(j)]);
 end
 hold on
 % set(gcf, 'Units','inches','position',[4 4 xDim yDim]);

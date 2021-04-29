@@ -1,19 +1,18 @@
- function Phase01DotPlot(DATA, Pathology, xlimit, yMax)
-
+function EventDotPlot(DATA, Pathology, xlimit, yMax)
 set(0,'defaultfigurecolor',[1 1 1])
 if isstruct(DATA)
     fields = fieldnames(DATA);
     fig = figure();
     t = title(Pathology,'FontWeight','Normal');
     titlePos = get(t, 'position');
-    titlePos(2) = titlePos(2) + 115;
+    titlePos(2) = titlePos(2) + 135;
     set(t, 'position',titlePos,'FontSize',8);
     for k = 1:numel(fields)
-        temp_timehitR = 60;%DATA.(fields{k}).timehitR;
+        temp_timehitR = DATA.(fields{k}).timehitR;
         R = round(temp_timehitR*0.97, 1);
         tempLocs = DATA.(fields{k}).PeakLocs;
         tempLocs = tempLocs(~isnan(tempLocs));
-        tempLocs = tempLocs(tempLocs <= 90);
+        tempLocs = tempLocs(tempLocs > 90);
         frames = length(DATA.(fields{k}).trace);
         if temp_timehitR > frames
             shiftedLocs = (tempLocs - R)./0.97;
@@ -30,14 +29,14 @@ if isstruct(DATA)
     yl = ylim;
     yticks(yMax);
     hold on
-    midLine = line([0, 0], [0, yMax],'Color',[0.5, 0.5, 0.5],'LineStyle','-','LineWidth',1);   
+    midLine = line([0, 0], [0, yMax],'Color',[0.6, 0.5, 0.5],'LineStyle','-','LineWidth',1);
     uistack(midLine,'top');
     yTickMax = ChangeTextColor(num2str(yMax), [0, 0, 0]);
     roiTicks = {yTickMax};
     ylim([0 yMax])
     xlim(xlimit);
     xticks([xlimit(1) 0 xlimit(2)]); 
-    set(gcf, 'Units','inches','position',[4 4 1.5 1.5]);
+    set(gcf, 'Units','inches','position',[4 4 1.5 1.75]);
     set(gca,'FontSize',10,'XColor', [137/255 137/255 137/255],'YColor', [137/255 137/255 137/255],'FontName','Arial');
     set(gca, 'FontName','Arial');
     set(gcf, 'PaperUnits', 'inches');
@@ -50,7 +49,7 @@ if isstruct(DATA)
     set(gca,'XTickLabel',timeTicks,'YTickLabel', roiTicks);
     xlabel(timeLabel);
     set(t,'FontSize',8);
-    print(fig, strcat(Pathology,'_DotPlot.png'), '-r900','-dpng');
+    print(fig, strcat(Pathology,'_DotPlot.png'), '-r600','-dpng');
 else
     error('Function not defined for DATA input being non-structure.')
 end

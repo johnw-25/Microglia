@@ -28,8 +28,6 @@ for ii = 1:size(process_data,1)
     test_trace = (test_trace - F0)./ F0;
     BP = 1:bp:frames;
     detrended_test = detrend(test_trace(:), polyDeg, BP, 'Continuous', false);
-    % detrended_test = abs(detrended_test);
-    % detrended_test(detrended_test < 0) = 0;
     % % Plot detrended and original to see difference
     TraceFigure = figure();
     plot(test_trace)
@@ -38,7 +36,7 @@ for ii = 1:size(process_data,1)
     legend('original trace','detrended trace');
     grid on
     
-    [LPF, response] = noiseRemover(filterOrder, Fc, Fs);
+    LPF = noiseRemover(filterOrder, Fc, Fs);
     test_filter = filtfilt(LPF, detrended_test);
     
     [raw_auc, filtered_auc, peakDurations, peakWidth, interEventIntervals, pks, locs, filtFig, removed,removedValleys,addedValleys] = peakMeasure(test_trace,detrended_test,test_filter, valleySD, peakSD, traceName);

@@ -1,4 +1,4 @@
-function HMMatrix(X, Y, MATRIX, yMax,lowestValue, highestValue,titleName, myColorMap)
+function Phase23HeatMap(X, Y, MATRIX, yMax,lowestValue, highestValue,titleName, myColorMap)
 %%%% Custom function to display matrix data as heatmap with our 'unique'
 %%%% figure specifications.
 %%%% INPUTS:
@@ -9,6 +9,9 @@ function HMMatrix(X, Y, MATRIX, yMax,lowestValue, highestValue,titleName, myColo
 %%%%% highest/lowestValue: determines color axis scale limits
 %%%%% titleName: figure title
 %%%%% myColorMap: colormap to apply to MATRIX
+matrixSortBy = mean(MATRIX(:,500:end), 2);
+[~, sortIdx] = sort(matrixSortBy, 'descend');
+MATRIX = MATRIX(sortIdx,:);
 set(0,'defaultfigurecolor',[1 1 1])
 f = figure();
 h1 = imagesc([X(1) X(2)], [1 Y], MATRIX);
@@ -22,15 +25,15 @@ yl = ylim();
 yTickMax = ChangeTextColor(num2str(round(yl(2))), [0, 0, 0]);
 roiTicks = {yTickMax};
 ylim([0 yMax]);
-xTickLocations = [round(xl(1)) 0 round(xl(2))];
+xTickLocations = [round(xl(1)), round(xl(2))];
 yTickLocations = [round(Y)];
-minTimeTick = ChangeTextColor(num2str(round(xl(1)/60)), [0, 0, 0]);
-time0Tick = ChangeTextColor(num2str(0), [0, 0, 0]);
-maxTimeTick = ChangeTextColor(num2str(round(xl(2)/60)), [0, 0, 0]);
-timeTicks = {minTimeTick, time0Tick, maxTimeTick};
-set(axisLines,'XTick', xTickLocations, ...
-    'YTick',yTickLocations);
-set(axisLines, 'XTickLabels',timeTicks,'YTickLabels',roiTicks);
+% minTimeTick = ChangeTextColor(num2str(0), [0, 0, 0]);
+% time0Tick = ChangeTextColor(num2str(1), [0, 0, 0]);
+% maxTimeTick = ChangeTextColor(num2str(1.5), [0, 0, 0]);
+% timeTicks = {minTimeTick, time0Tick, maxTimeTick};
+% set(axisLines,'XTick', xTickLocations, ...
+%     'YTick',yTickLocations);
+% set(axisLines, 'XTickLabels',timeTicks,'YTickLabels',roiTicks);
 % Make new labels for the new tick marks
 title(titleName,'FontWeight','Normal'); %xlabel(labels,'Time (min)'); ylabel('ROI');
 set(h1,'AlphaData',~isnan(MATRIX));
@@ -42,7 +45,7 @@ caxis(gca,[lowestValue, highestValue]);
 colormap(myColorMap);
 colorbar
 hold on
-line(axisLines,[0, 0], [0 X(2)], 'Color', [0.8, 0.8, 0.8],'LineStyle','-','LineWidth',1);
+line(axisLines,[60, 60], [0 90], 'Color', [0.8, 0.8, 0.8],'LineStyle','-','LineWidth',1);
 box off
 print(f,strcat(titleName,'_DF.png'), '-r900','-dpng');
 end
